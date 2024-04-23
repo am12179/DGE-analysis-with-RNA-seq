@@ -32,8 +32,7 @@ estimates to normalize errors from sequencing and sampling and give better estim
 The statistical approach used for the multiple-test correction method was to use a false discovery rate (FDR)
 adjusted p value, and I chose level of significance to be 0.05, so that genes with an adjusted p value greater
 than .05 were rejected to avoid false positives. What was unusual in the multiqc report was that none of the
-samples passed the sequence duplication levels and the per base sequence content. The library type Salmon
-inferred for the input reads was stranded, derived from the reverse strand (SR)
+samples passed the sequence duplication levels and the per base sequence content. 
 
 Discussion:
 
