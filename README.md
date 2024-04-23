@@ -1,4 +1,5 @@
 Introduction:
+
 For my project, I used differential gene expression (DGE) analysis with RNA-seq, which is both pertinent
 and a useful tool for the advancements of biomedicine. The data we are using is extracted from research done
 by Beth Israel Deaconess Medical Center and whose methods consisted of transfecting MDA-MB-231 breast
@@ -11,7 +12,8 @@ differentially expressed genes that may be impacted by knocking down NRDE2.
 A synopsis of the experiment can be found here:
 http://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
 
-##Methods:
+Methods:
+
 I first downloaded and unzipped all my fastq files from the project repository. I trimmed the fastqs with fastp
 using length_required 75 and –n_base_limit 50 to automatically remove adapters from single end reads and
 1
@@ -20,7 +22,7 @@ reference transcriptome from the Ensembl website and then ran fastqc on the proc
 separately on each sample. Next, I generated a MultiQC report. Then, I ran Picard tools NormalizeFasta
 to strip everything after the transcript id, which is the first identifier in the Fasta header lines for each
 transcript on both the reference files and reads that were aligned against the reference human transcriptome
-that I retrieved from the Ensembl website. After, I created a Salmon index and then ran Salmon in mappingbased mode using a command appropriate for single-end data. Finally, I conducted a standard analysis of
+that I retrieved from the Ensembl website. After, I created a Salmon index and then ran Salmon in mapping based mode using a command appropriate for single-end data. Finally, I conducted a standard analysis of
 differential gene expression using DESEQ. Included in my analysis is a table with the total number of reads
 and the mapping rate for each sample, the number of statistically significant genes at 0.05 FDR, the number
 of biologically relevant differentially expressed genes defined using a change in gene expression of two-fold
@@ -33,7 +35,8 @@ than .05 were rejected to avoid false positives. What was unusual in the multiqc
 samples passed the sequence duplication levels and the per base sequence content. The library type Salmon
 inferred for the input reads was stranded, derived from the reverse strand (SR)
 
-##Discussion:
+Discussion:
+
 My deseq analysis identified that there are 62 biologically and statistically relevant genes that are impacted by
 knocking down NRDE2. I came to this conclusion by first developing a table with the total number of reads
 and the mapping rate for each sample, a PCA plot which provided me with an indication of the distances
