@@ -1,1 +1,296 @@
+cp /scratch/work/courses/BI7653/project.2023/fastqs/*.fastq.gz .
 
+[am12179@cs061 ngs.finalproject]$ gunzip -c  SRR7819990.fastq.gz > SRR7819990.fastq
+[am12179@cs061 ngs.finalproject]$ gunzip -c  SRR7819991.fastq.gz > SRR7819991.fastq
+[am12179@cs061 ngs.finalproject]$ gunzip -c  SRR7819992.fastq.gz > SRR7819992.fastq
+[am12179@cs061 ngs.finalproject]$ gunzip -c  SRR7819993.fastq.gz > SRR7819993.fastq
+[am12179@cs061 ngs.finalproject]$ gunzip -c  SRR7819994.fastq.gz > SRR7819994.fastq
+[am12179@cs061 ngs.finalproject]$ gunzip -c  SRR7819995.fastq.gz > SRR7819995.fastq
+ 
+Task 1: Trim the fastqs with fastp using appropriate settings to automatically remove adapters from single end reads and polyG sequences introduced on NextSeq platforms (see Week 2) The following is a table on Greene with the samples and their fastq files:
+#!/bin/bash
+#
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=8:00:00
+#SBATCH --mem=16GB
+#SBATCH --job-name=slurm_template
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=am12179@nyu.edu
+
+module purge
+module load fastp/intel/0.20.1
+
+fastp -i SRR7819990.fastq -o  SRR7819990_out.fastq \
+        --length_required 75 \ 
+        --n_base_limit 50 --html SRR7819990.fastp.html \ 
+        --json SRR7819990.fastp.json
+fastp -i    SRR7819991.fastq -o SRR7819991_out.fastq \
+        --length_required  \
+        --n_base_limit 50 --html SRR7819991.fastp.html \
+        --json SRR7819991.fastp.json
+fastp -i    SRR7819992.fastq -o  SRR7819992_out.fastq \
+        --length_required 75 \
+        --n_base_limit 50 --html SRR7819992.fastp.html \
+        --json SRR7819992.fastp.json
+fastp -i    SRR7819993.fastq -o  SRR7819993_out.fastq \
+        --length_required 75 \
+        --n_base_limit 50 --html SRR7819993.fastp.html \
+        --json SRR7819993.fastp.json
+fastp -i    SRR7819994.fastq -o  SRR7819994_out.fastq \
+        --length_required 75 \
+        --n_base_limit 50 --html SRR7819994.fastp.html \
+        --json SRR7819994.fastp.json
+fastp -i    SRR7819995.fastq -o  SRR7819995_out.fastq \
+        --length_required 75 \
+        --n_base_limit 50 --html SRR7819995.fastp.html \
+        --json SRR7819995.fastp.json
+Task 2: Run fastqc on the processed RNA-seq reads separately on each sample
+am12179@log-3 ngs.optiona]$ wget ftp://ftp.ensembl.org/pub/release-98/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.abinitio.fa.
+gz
+ 
+
+[am12179@cs061 ngs.finalproject]$ module load fastqc/0.11.9
+[am12179@cs061 ngs.finalproject]$ fastqc  SRR7819990_out.fastq -
+[am12179@cs061 ngs.finalproject]$ fastqc  SRR7819991_out.fastq 
+[am12179@cs061 ngs.finalproject]$ fastqc  SRR7819992_out.fastq 
+[am12179@cs061 ngs.finalproject]$ fastqc  SRR7819993_out.fastq 
+[am12179@cs061 ngs.finalproject]$ fastqc  SRR7819994_out.fastq 
+[am12179@cs061 ngs.finalproject]$ fastqc  SRR7819995_out.fastq
+  
+    
+Task 2: Generate a MultiQC report
+module load multiqc/1.9
+[am12179@cs090 ngs.optiona]$ find $PWD -name \*fastqc.zip > fastqc_files.txt
+[am12179@cs090 ngs.optiona]$ multiqc --file-list /scratch/am12179/ngs.optiona/fastqc_files.txt
+Task 3: Run Picard tools NormalizeFasta to strip everything after transcript id, which is the first identifier in the Fasta header lines for each transcript.
+#!/bin/bash
+#
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=8:00:00
+#SBATCH --mem=8GB
+#SBATCH --job-name=slurm_template
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=am12179@nyu.edu
+
+module load picard/2.23.8
+ 
+
+java -jar $PICARD_JAR NormalizeFasta \
+      I=Homo_sapiens.GRCh38.cdna.all.fa \
+      O=Homo_sapiens.GRCh38.cdna.all.norm.fa
+      
+module purge
+#!/bin/bash
+#
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=8:00:00
+#SBATCH --mem=8GB
+#SBATCH --job-name=slurm_template
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=am12179@nyu.edu
+
+module load picard/2.23.8
+ 
+
+java -jar $PICARD_JAR NormalizeFasta \
+        I=Homo_sapiens.GRCh38.cdna.abinitio.fa   \
+      O=norm_sequence_Homo_sapiens.GRCh38.cdna.abinitio.fa
+      
+module purge
+Task 4: Create Salmon index.
+#!/bin/bash
+#
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=8:00:00
+#SBATCH --mem=16GB
+#SBATCH --job-name=slurm_
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=am12719@nyu.edu
+
+module purge
+
+module load salmon/1.4.0
+
+salmon index -t norm_sequence_Homo_sapiens.GRCh38.cdna.abinitio.fa -i Homo_sapiens_GRCh38_cdna_norm_transcripts_index -k 31
+
+module purge
+Task 5: Run Salmon in mapping-based mode using a command appropriate for single-end data.
+#!/bin/bash
+#
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=4
+#SBATCH --time=24:00:00
+#SBATCH --mem=8GB
+#SBATCH --job-name=salmon
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=am12179@nyu.edu
+#SBATCH --array=1-6
+
+module purge
+
+module load salmon/1.4.0 
+
+salmon quant \
+    -i  Homo_sapiens_GRCh38_cdna_norm_transcripts_index \
+    -l A \
+    -r SRR7819990_out.fastq \
+    --validateMappings \
+    --gcBias \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -o SRR7819990.transcripts_quant
+
+salmon quant \
+    -i  Homo_sapiens_GRCh38_cdna_norm_transcripts_index \
+    -l A \
+    -r SRR7819991_out.fastq \
+    --validateMappings \
+    --gcBias \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -o SRR7819991.transcripts_quant
+
+salmon quant \
+    -i  Homo_sapiens_GRCh38_cdna_norm_transcripts_index \
+    -l A \
+    -r SRR7819992_out.fastq \
+    --validateMappings \
+    --gcBias \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -o SRR7819992.transcripts_quant
+
+salmon quant \
+    -i  Homo_sapiens_GRCh38_cdna_norm_transcripts_index \
+    -l A \
+    -r SRR7819993_out.fastq \
+    --validateMappings \
+    --gcBias \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -o SRR7819993.transcripts_quant
+
+salmon quant \
+    -i  Homo_sapiens_GRCh38_cdna_norm_transcripts_index \
+    -l A \
+    -r SRR7819994_out.fastq \
+    --validateMappings \
+    --gcBias \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -o SRR7819994.transcripts_quant
+
+salmon quant \
+    -i  Homo_sapiens_GRCh38_cdna_norm_transcripts_index \
+    -l A \
+    -r SRR7819995_out.fastq \
+    --validateMappings \
+    --gcBias \
+    --threads ${SLURM_CPUS_PER_TASK} \
+    -o SRR7819995.transcripts_quant
+
+module purge
+Task 6: Results
+library("tximport")
+## Warning: package 'tximport' was built under R version 4.2.2
+sample_names = c("SRR7819990",
+                 "SRR7819991",
+                 "SRR7819992",
+                 "SRR7819993",
+                 "SRR7819994",
+                 "SRR7819995")
+sample_condition = c(rep('control',3),rep('treated',3))
+
+files = file.path("C:/Users/Alasi/Downloads",
+                  paste(sample_names,".transcripts_quant",sep=""),
+                  'quant.sf')
+
+names(files) = sample_names
+
+print(files)
+##                                                       SRR7819990 
+## "C:/Users/Alasi/Downloads/SRR7819990.transcripts_quant/quant.sf" 
+##                                                       SRR7819991 
+## "C:/Users/Alasi/Downloads/SRR7819991.transcripts_quant/quant.sf" 
+##                                                       SRR7819992 
+## "C:/Users/Alasi/Downloads/SRR7819992.transcripts_quant/quant.sf" 
+##                                                       SRR7819993 
+## "C:/Users/Alasi/Downloads/SRR7819993.transcripts_quant/quant.sf" 
+##                                                       SRR7819994 
+## "C:/Users/Alasi/Downloads/SRR7819994.transcripts_quant/quant.sf" 
+##                                                       SRR7819995 
+## "C:/Users/Alasi/Downloads/SRR7819995.transcripts_quant/quant.sf"
+Table with the total number of reads and the mapping rate for each sample
+
+read.csv("C:\\Users\\Alasi\\Downloads\\table.csv")
+
+tx2gene = read.csv("tx2gene.csv",
+                     header=F,
+                     sep=",")
+
+tx2gene$V1<- gsub("\\..*","",tx2gene$V1)
+tx2gene$V2<- gsub("\\..*","",tx2gene$V2)
+head (tx2gene)
+
+txi = tximport(files,
+               type="salmon",
+               tx2gene=tx2gene,
+               txOut=TRUE)
+samples = data.frame(sample_names=sample_names,
+                     condition=sample_condition)
+
+row.names(samples) = sample_names
+library("DESeq2")
+ddsTxi = DESeqDataSetFromTximport(txi,
+                                  colData = samples,
+                                  design = ~ condition)
+print(ddsTxi)
+keep = rowSums(counts(ddsTxi)) >=10 #filter data
+ddsTxi = ddsTxi[keep,]
+ddsTxi = DESeq(ddsTxi)
+
+rld = rlog(ddsTxi) #PCA
+plotPCA(object = rld)
+estimateDispersions(ddsTxi, fitType = "parametric")
+plotDispEsts(object = ddsTxi, 
+             main="Dispersion-by-Mean plot")
+
+res = results(ddsTxi, contrast = c('condition',
+                                   'control',
+                                   'treated'))
+write.table(res,file = "DE_Seq2_res_ALL_genes.txt", sep = "\t")
+ 
+plotMA(res,
+       ylim = c(-6,6),
+       main = "Control vs Treated")
+resshrunk = lfcShrink(ddsTxi, contrast = c('condition',
+                                            'control',
+                                            'treated'), type = "ashr")
+plotMA(resshrunk,
+       ylim = c(-6,6),
+       main = "Control vs Treated (Shrunk)")
+resshrunk = resshrunk[complete.cases(resshrunk),] # remove NAs
+
+resshrunk_ordered = resshrunk[order(resshrunk$padj),]
+
+library('ggplot2') #Raw p-value histogram
+ggplot(as.data.frame(resshrunk_ordered),aes(pvalue)) + geom_histogram(fill="light blue",color='black')
+Table with the 10 most highly significant differentially expressed genes
+
+head(resshrunk_ordered, n = 10) 
+The number of statistically relevant differentially expressed genes using 0.05 false discovery rate
+
+resshrunk_fdr = resshrunk_ordered[resshrunk_ordered$padj<=0.05,]
+summary(resshrunk_fdr)
+The number of biologically relevant differentially expressed genes with a gene expression two fold or greater
+
+resshrunk_fdr.cut_1 = resshrunk_fdr[resshrunk_fdr$log2FoldChange>=1,]
+resshrunk_fdr.cut_2 = resshrunk_fdr[resshrunk_fdr$log2FoldChange<= -1,]
+
+diffexp_genes = c(row.names(resshrunk_fdr.cut_1), row.names(resshrunk_fdr.cut_2))  
+
+summary(diffexp_genes)
